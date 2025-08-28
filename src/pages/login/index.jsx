@@ -41,10 +41,6 @@ const Login = () => {
   return (
     <div className="flex gap-5 justify-center items-center h-screen">
       <div className="w-full p-6">
-        <div className="flex justify-center items-center mb-3">
-          <img src={Logo} width="300px" height="100px"></img>
-        </div>
-
         <div className="mb-5">
           <div className="mb-2">
             <Text>Username</Text>
@@ -89,8 +85,10 @@ const Login = () => {
           </Button>
         </div>
       </div>
-      <div className="w-full bg-gray-200 flex items-center justify-center p-6 h-screen">
-        app logo and background
+      <div className="w-full flex items-center justify-center p-6 h-screen">
+        <div className="flex justify-center items-center mb-3">
+          <img src={Logo} width="300px" height="100px"></img>
+        </div>
       </div>
     </div>
   );
