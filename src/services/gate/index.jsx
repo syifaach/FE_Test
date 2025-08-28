@@ -20,9 +20,9 @@ export const gateService = () => {
     }
   };
 
-  const updateGate = async () => {
+  const updateGate = async (request) => {
     try {
-      const res = await httpHandler.put(API.gerbang);
+      const res = await httpHandler.put(API.gerbang, request);
       return res;
     } catch (err) {
       console.error(err);

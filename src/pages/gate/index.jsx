@@ -12,13 +12,6 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Select,
   Table,
   TableContainer,
@@ -31,8 +24,9 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { gateService } from "../../services/gate";
+import FormModal from "./components/FormModal";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 const Gate = () => {
   const [data, setData] = useState();
@@ -42,7 +36,9 @@ const Gate = () => {
     namaGerbang: "",
     namaCabang: "",
   });
-  const [isOpen, setIsOpen] = useState(false);
+  const [isAdd, setIsAdd] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [isView, setIsView] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE);
   const [pagination, setPagination] = useState({
@@ -70,7 +66,11 @@ const Gate = () => {
     }));
   };
 
-  const onClose = () => setIsOpen(false);
+  const onClose = () => {
+    setIsAdd(false)
+    setIsEdit(false)
+    setIsView(false)
+  }
 
   const addData = async () => {
     const { addGate } = gateService();
@@ -78,15 +78,15 @@ const Gate = () => {
       id: values.id,
       IdCabang: values.idCabang,
       NamaCabang: values.namaCabang,
-      NamaGerbang: values.namaGerbang
-    }
+      NamaGerbang: values.namaGerbang,
+    };
 
     await addGate(request)
       .then((res) => {
         if (res) {
           alert("Tambah Berhasil");
-          setIsOpen(false)
-          window.location.reload()
+          setIsOpen(false);
+          window.location.reload();
         }
       })
       .catch((err) => {
@@ -132,8 +132,54 @@ const Gate = () => {
       });
   };
 
+  const editData = async () => {
+    const { updateGate } = gateService();
+    const request = {
+      id: values.id,
+      IdCabang: values.idCabang,
+      NamaCabang: values.namaCabang,
+      NamaGerbang: values.namaGerbang,
+    };
+
+    await updateGate(request)
+      .then((res) => {
+        if (res) {
+          alert("Update Berhasil");
+          setIsEdit(false);
+          window.location.reload();
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  const onEdit = (idCabang) => {
+    setIsEdit(true)
+    const find = data?.find((val) => val.IdCabang === idCabang)
+    setValues(prev => ({
+      ...prev,
+      id: find?.id,
+      idCabang: find?.IdCabang,
+      namaCabang: find?.NamaCabang,
+      namaGerbang: find?.NamaGerbang
+    }))
+  }
+
+  const onView = (idCabang) => {
+    setIsView(true)
+    const find = data?.find((val) => val.IdCabang === idCabang)
+    setValues(prev => ({
+      ...prev,
+      id: find?.id,
+      idCabang: find?.IdCabang,
+      namaCabang: find?.NamaCabang,
+      namaGerbang: find?.NamaGerbang
+    }))
+  }
+
   console.log("data", data);
-  console.log('pagesize', pageSize)
+  console.log("pagesize", pageSize);
 
   return (
     <div className="p-6">
@@ -146,7 +192,12 @@ const Gate = () => {
           <Input type="tel" placeholder="Search" />
         </InputGroup>
 
-        <Button leftIcon={<AddIcon />} backgroundColor="blue.900" color="white" onClick={() => setIsOpen(true)}>
+        <Button
+          leftIcon={<AddIcon />}
+          backgroundColor="blue.900"
+          color="white"
+          onClick={() => setIsAdd(true)}
+        >
           Tambah
         </Button>
       </div>
@@ -171,12 +222,12 @@ const Gate = () => {
                     <IconButton
                       variant="outline"
                       icon={<EditIcon />}
-                      onClick={() => alert("To Be Continue")}
+                      onClick={() => onEdit(row.IdCabang)}
                     />
                     <IconButton
                       variant="outline"
                       icon={<ViewIcon />}
-                      onClick={() => alert("To Be Continue")}
+                      onClick={() => onView(row.IdCabang)}
                     />
                     <IconButton
                       variant="outline"
@@ -221,48 +272,36 @@ const Gate = () => {
         </div>
       </TableContainer>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Tambah Gerbang</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <div className="flex flex-col gap-2">
-              <Input
-                name="id"
-                placeholder="Input ID disini"
-                value={values?.id}
-                onChange={onChange}
-              />
-              <Input
-                name="idCabang"
-                placeholder="Input ID Cabang disini"
-                value={values?.idCabang}
-                onChange={onChange}
-              />
-              <Input
-                name="namaCabang"
-                placeholder="Input Nama Cabang disini"
-                value={values?.namaCabang}
-                onChange={onChange}
-              />
-              <Input
-                name="namaGerbang"
-                placeholder="Input Nama Gerbang disini"
-                value={values?.namaGerbang}
-                onChange={onChange}
-              />
-            </div>
-          </ModalBody>
+      {isAdd && (
+        <FormModal
+          isOpen={isAdd}
+          values={values}
+          onClose={onClose}
+          onChange={onChange}
+          onSubmit={addData}
+          type={"Tambah"}
+        />
+      )}
+      {isEdit && (
+        <FormModal
+          isOpen={isEdit}
+          values={values}
+          onClose={onClose}
+          onChange={onChange}
+          onSubmit={editData}
+          type={"Edit"}
+        />
+      )}
 
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
-              Close
-            </Button>
-            <Button colorScheme="blue" onClick={addData}>Submit</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {isView && (
+        <FormModal
+          isOpen={isView}
+          values={values}
+          onClose={onClose}
+          onChange={onChange}
+          type={"View"}
+        />
+      )}
     </div>
   );
 };
